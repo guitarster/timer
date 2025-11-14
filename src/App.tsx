@@ -1,5 +1,5 @@
 import "./App.css";
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 
 function useInput(initialValue: number) {
   const [value, setValue] = useState(initialValue);
@@ -12,6 +12,28 @@ function useInput(initialValue: number) {
 
 function App() {
   const name = useInput(0);
+  const [startTime, setStartTime] = useState(0);
+  const [now, setNow] = useState(0);
+  const intervalID = useRef(-1);
+
+  useEffect(() => {
+    if ((now - startTime) / 1000 >= name.value) {
+      clearInterval(intervalID.current);
+      setNow(startTime + name.value * 1000);
+    }
+  }, [startTime, now, name.value]);
+
+  function handleStart() {
+    const dateNow = Date.now();
+    setStartTime(dateNow);
+    setNow(dateNow);
+
+    intervalID.current = setInterval(() => {
+      setNow(Date.now());
+    }, 10);
+  }
+
+  const secondsLeft = name.value - (now - startTime) / 1000;
 
   return (
     <div className="app">
@@ -26,10 +48,10 @@ function App() {
       </div>
       <div>
         <h2>Time left:</h2>
-        <h2>{name.value.toFixed(3)} s</h2>
+        <h2>{secondsLeft.toFixed(3)} s</h2>
       </div>
       <div className="buttons">
-        <button>Start</button>
+        <button onClick={handleStart}>Start</button>
         <button>Pause</button>
         <button>Reset</button>
       </div>
